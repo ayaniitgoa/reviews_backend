@@ -6,9 +6,6 @@ export const googleCallback = (req, res) => {
     email: req.user.email,
     name: req.user.name,
   });
-  console.log("userrrr", req.user);
-
-  console.log("tojeh", token);
 
   res.cookie("token", token, {
     httpOnly: true,
@@ -22,6 +19,8 @@ export const googleCallback = (req, res) => {
 };
 
 export const getCurrentUser = (req, res) => {
+  console.log("reqq");
+
   res.json(req.user);
 };
 

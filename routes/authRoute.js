@@ -24,6 +24,7 @@ router.get(
 );
 
 router.get("/current_user", authenticate, getCurrentUser);
+
 router.get("/logout", logout);
 
 export default router;

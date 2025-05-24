@@ -2,12 +2,15 @@ import express from "express";
 import dotenv from "dotenv";
 import helmet from "helmet";
 import cors from "cors";
-import bodyParser from "body-parser";
-import indexRoute from "./routes/indexRoute.js";
+
 import authRoute from "./routes/authRoute.js";
 import mediaRoute from "./routes/mediaRoute.js";
+import indexRoute from "./routes/indexRoute.js";
+import reviewRoute from "./routes/reviewRoute.js";
 import registerRoute from "./routes/registerRoute.js";
 import locationRoute from "./routes/locationRoute.js";
+import businessRoute from "./routes/businessRoute.js";
+
 import "./passport.js";
 import passport from "passport";
 import session from "express-session";
@@ -52,8 +55,10 @@ app.use(passport.session());
 app.use("/", indexRoute);
 app.use("/auth", authRoute);
 app.use("/media", mediaRoute);
+app.use("/reviews", reviewRoute);
 app.use("/register", registerRoute);
 app.use("/locations", locationRoute);
+app.use("/businesses", businessRoute);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

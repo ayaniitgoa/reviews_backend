@@ -19,3 +19,11 @@ export const findUserById = async (id) => {
   const result = await query("SELECT * FROM users WHERE id = $1", [id]);
   return result.rows[0];
 };
+
+export const findUserByEmailAndName = async ({ email, name }) => {
+  const result = await query(
+    "SELECT * from users where email = $1 and name = $2",
+    [email, name]
+  );
+  return result.rows[0];
+};

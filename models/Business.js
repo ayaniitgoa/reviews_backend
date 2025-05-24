@@ -1,27 +1,11 @@
 import { query } from "../db.js";
 
-// export const getBusinesses = async ( locationid ) => {
-//   try {
-//     const result = await query(
-//       "SELECT * FROM businesses WHERE locationid = $1",
-//       [locationid]
-//     );
-//     console.log("locationid", locationid);
-//     console.log("rows", result.rows);
-
-//     return result.rows;
-//   } catch (error) {
-//     console.error("Database query error:", error);
-//     throw error; // Re-throw to be caught by route handler
-//   }
-
-// };
 export const getBusinesses = async (locationid) => {
   try {
-    // Step 1: Fetch all category groups (e.g., "Healthcare", "Sports")
+    // Step 1: Fetch all category groups
     const groups = await query("SELECT * FROM category_group");
 
-    // Step 2: For each group, fetch its categories and businesses
+    // Step 2: For each group, fetch its categories and businesses with review data
     const result = {};
     for (const group of groups.rows) {
       const categories = await query(
@@ -30,14 +14,22 @@ export const getBusinesses = async (locationid) => {
       );
 
       result[group.name] = {
-        default: categories.rows[0]?.name || "", // Set first category as default
+        default: categories.rows[0]?.name || "",
         categories: {},
       };
 
-      // Step 3: Fetch businesses for each category
+      // Step 3: Fetch businesses with review counts and average ratings
       for (const category of categories.rows) {
         const businesses = await query(
-          "SELECT id, name, rating FROM businesses WHERE categoryid = $1 AND locationid = $2",
+          `SELECT 
+             b.id, 
+             b.name, 
+             COALESCE(AVG(r.rating), 0) AS rating,
+             COUNT(r.reviewid) AS reviews
+           FROM businesses b
+           LEFT JOIN reviews r ON b.id = r.businessid
+           WHERE b.categoryid = $1 AND b.locationid = $2
+           GROUP BY b.id, b.name, b.rating`,
           [category.id, locationid]
         );
 
@@ -45,8 +37,8 @@ export const getBusinesses = async (locationid) => {
           (b) => ({
             id: b.id,
             name: b.name,
-            rating: b.rating,
-            reviews: 0, // Add review count later
+            rating: parseFloat(b.rating).toFixed(1), // Format to 1 decimal place
+            reviews: parseInt(b.reviews), // Ensure integer value
           })
         );
       }
@@ -54,7 +46,7 @@ export const getBusinesses = async (locationid) => {
     return result;
   } catch (error) {
     console.error("Database query error:", error);
-    throw error; // Re-throw to be caught by route handler
+    throw error;
   }
 };
 
